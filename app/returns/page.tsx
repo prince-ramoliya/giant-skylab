@@ -4,6 +4,7 @@ import AddReturnForm from "./AddReturnForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { format } from "date-fns";
+import { ReturnRow } from "./ReturnRow";
 
 export default async function ReturnsPage() {
     const returns = await getReturns();
@@ -39,31 +40,19 @@ export default async function ReturnsPage() {
                                     <th className="px-6 py-3">Item</th>
                                     <th className="px-6 py-3">Reason</th>
                                     <th className="px-6 py-3 text-right">Refund Amount</th>
+                                    <th className="px-6 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 bg-white">
                                 {returns.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
                                             No returns logged.
                                         </td>
                                     </tr>
                                 ) : (
                                     returns.map((r: any) => (
-                                        <tr key={r.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap text-slate-900">{format(new Date(r.date), "dd MMM yyyy")}</td>
-                                            <td className="px-6 py-4 font-medium text-slate-900">{r.supplier.name}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-slate-900">{r.quantity} x {r.categoryName}</span>
-                                                    <span className="text-xs text-slate-500">@ ₹{r.price}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 max-w-[150px] truncate" title={r.reason || ""}>{r.reason || "-"}</td>
-                                            <td className="px-6 py-4 text-right font-bold text-red-600">
-                                                -₹{(r.price * r.quantity).toLocaleString("en-IN")}
-                                            </td>
-                                        </tr>
+                                        <ReturnRow key={r.id} returnItem={r} />
                                     ))
                                 )}
                             </tbody>

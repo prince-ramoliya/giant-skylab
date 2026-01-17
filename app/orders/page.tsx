@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { Plus, ShoppingCart } from "lucide-react";
+import { OrderRow } from "./OrderRow";
 
 export default async function OrdersPage() {
     const orders = await getOrders();
@@ -32,36 +33,20 @@ export default async function OrdersPage() {
                                 <th className="px-6 py-3">Supplier</th>
                                 <th className="px-6 py-3">Items</th>
                                 <th className="px-6 py-3 text-right">Total Amount</th>
+                                <th className="px-6 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 bg-white">
                             {orders.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
+                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
                                         No recent orders.
                                     </td>
                                 </tr>
                             ) : (
-                                orders.map((order) => {
-                                    const total = order.items.reduce((sum: number, i: any) => sum + i.total, 0);
-                                    return (
-                                        <tr key={order.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap text-slate-900 border-r border-slate-50 border-transparent">{format(new Date(order.date), "dd MMM yyyy")}</td>
-                                            <td className="px-6 py-4 font-medium text-slate-900">{order.supplier.name}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-slate-900">{order.items.length} items</span>
-                                                    <span className="text-xs text-slate-500 truncate max-w-[200px]">
-                                                        {order.items.map((i: any) => i.categoryName).join(", ")}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-right font-bold text-slate-900">
-                                                ₹{total.toLocaleString("en-IN")}
-                                            </td>
-                                        </tr>
-                                    );
-                                })
+                                orders.map((order) => (
+                                    <OrderRow key={order.id} order={order} />
+                                ))
                             )}
                         </tbody>
                     </table>

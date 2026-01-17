@@ -1,5 +1,5 @@
 import db from "@/lib/db";
-import OrderEntryForm from "./OrderEntryForm";
+import OrderForm from "@/components/orders/OrderForm";
 
 export default async function NewOrderPage() {
     const suppliers = await db.supplier.findMany({
@@ -17,7 +17,7 @@ export default async function NewOrderPage() {
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight text-slate-900">New Order</h1>
             </div>
-            <OrderEntryForm suppliers={suppliers} categories={categories} />
+            <OrderForm suppliers={suppliers} categories={categories} />
         </div>
     );
 }

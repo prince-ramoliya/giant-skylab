@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { Plus, Tag } from "lucide-react";
+import { CategoryRow } from "./CategoryRow";
 
 export default async function ProductsPage() {
     const categories = await getCategories();
@@ -70,18 +71,7 @@ export default async function ProductsPage() {
                                     </tr>
                                 ) : (
                                     categories.map((c) => (
-                                        <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-6 py-4 font-medium text-slate-900">{c.name}</td>
-                                            <td className="px-6 py-4">₹{c.defaultPrice}</td>
-                                            <td className="px-6 py-4">
-                                                <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                                    Active
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <span className="text-slate-400 hover:text-slate-600 cursor-pointer text-xs">Edit</span>
-                                            </td>
-                                        </tr>
+                                        <CategoryRow key={c.id} category={c} />
                                     ))
                                 )}
                             </tbody>

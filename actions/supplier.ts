@@ -40,3 +40,16 @@ export async function toggleSupplierStatus(id: string, active: boolean) {
     });
     revalidatePath("/", "layout");
 }
+
+export async function deleteSupplier(id: string) {
+    // Check for constraints if needed, or rely on DB constraints (foreign keys might fail)
+    try {
+        await db.supplier.delete({
+            where: { id },
+        });
+        revalidatePath("/", "layout");
+    } catch (error) {
+        console.error("Failed to delete supplier:", error);
+        throw new Error("Cannot delete supplier with existing orders or returns.");
+    }
+}

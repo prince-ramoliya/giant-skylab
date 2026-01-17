@@ -2,23 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useFieldArray, useWatch } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { createOrder } from "@/actions/order";
+import { createOrder, updateOrder } from "@/actions/order";
 import { cn } from "@/lib/utils";
 
 // Schema
 const orderSchema = z.object({
     supplierId: z.string().min(1, "Please select a seller"),
     date: z.string().refine((val) => !isNaN(Date.parse(val)), "Invalid date"),
-    notes: z.string().optional(),
+    notes: z.string().optional().nullable(),
     items: z.array(
         z.object({
             categoryName: z.string().min(1, "Required"),
@@ -31,20 +31,41 @@ const orderSchema = z.object({
 
 type OrderFormValues = z.infer<typeof orderSchema>;
 
-interface OrderEntryFormProps {
+interface OrderFormProps {
     suppliers: { id: string; name: string }[];
     categories: { id: string; name: string; defaultPrice: number }[];
+    initialData?: {
+        id: string;
+        supplierId: string;
+        date: Date | string;
+        notes?: string | null;
+        items: {
+            categoryName: string;
+            price: number;
+            quantity: number;
+        }[];
+    };
+    isEditMode?: boolean;
 }
 
-export default function OrderEntryForm({ suppliers, categories }: OrderEntryFormProps) {
+export default function OrderForm({ suppliers, categories, initialData, isEditMode }: OrderFormProps) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const defaultDate = initialData?.date
+        ? (typeof initialData.date === 'string' ? initialData.date.split('T')[0] : format(initialData.date, "yyyy-MM-dd"))
+        : format(new Date(), "yyyy-MM-dd");
 
     const form = useForm<OrderFormValues>({
         resolver: zodResolver(orderSchema),
         defaultValues: {
-            date: format(new Date(), "yyyy-MM-dd"),
-            items: [{ categoryName: "", price: 0, quantity: 1, total: 0 }],
+            supplierId: initialData?.supplierId || "",
+            date: defaultDate,
+            notes: initialData?.notes,
+            items: initialData?.items?.map(i => ({
+                ...i,
+                total: i.price * i.quantity
+            })) || [{ categoryName: "", price: 0, quantity: 1, total: 0 }],
         },
     });
 
@@ -56,10 +77,6 @@ export default function OrderEntryForm({ suppliers, categories }: OrderEntryForm
     });
 
     const watchItems = watch("items");
-
-    // Calculate live totals for each item and update if needed (visual only)
-    // This effect is implicitly handled by render logic or could be a useEffect, 
-    // but for simplicity we calculate derived state during render for summary.
 
     const categoryBreakdown = (watchItems || []).reduce((acc: Record<string, number>, item) => {
         if (item.categoryName && item.quantity > 0) {
@@ -75,12 +92,19 @@ export default function OrderEntryForm({ suppliers, categories }: OrderEntryForm
     async function onSubmit(data: OrderFormValues) {
         setIsSubmitting(true);
         try {
-            await createOrder({
+            const formattedData = {
                 supplierId: data.supplierId,
                 date: new Date(data.date),
-                notes: data.notes,
+                notes: data.notes || undefined,
                 items: data.items.map(i => ({ ...i, total: i.price * i.quantity })),
-            });
+            };
+
+            if (isEditMode && initialData?.id) {
+                await updateOrder(initialData.id, formattedData);
+            } else {
+                await createOrder(formattedData);
+            }
+
             router.push("/orders");
             router.refresh();
         } catch (error) {
@@ -94,6 +118,7 @@ export default function OrderEntryForm({ suppliers, categories }: OrderEntryForm
     const handleCategoryChange = (index: number, categoryName: string) => {
         const category = categories.find((c) => c.name === categoryName);
         if (category) {
+            // Only update price if it's 0 or user hasn't manually set it (simplified: always update default on category change)
             setValue(`items.${index}.price`, category.defaultPrice);
         }
         setValue(`items.${index}.categoryName`, categoryName);
@@ -106,7 +131,7 @@ export default function OrderEntryForm({ suppliers, categories }: OrderEntryForm
                 <div className="lg:col-span-2 space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Order Details</CardTitle>
+                            <CardTitle>{isEditMode ? "Edit Order Details" : "Order Details"}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
@@ -255,7 +280,7 @@ export default function OrderEntryForm({ suppliers, categories }: OrderEntryForm
                                 className="w-full h-12 text-lg mt-4"
                                 variant="primary"
                             >
-                                {isSubmitting ? "Saving..." : "Save Order"}
+                                {isSubmitting ? "Saving..." : (isEditMode ? "Update Order" : "Save Order")}
                             </Button>
                         </CardContent>
                     </Card>
