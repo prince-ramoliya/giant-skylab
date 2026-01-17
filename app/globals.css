@@ -1,26 +1,90 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer components {
+  .container-fluid {
+    @apply w-full mx-auto max-w-[1920px];
+    /* Cap at huge specific width if needed, or just strictly full */
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme {
+  --font-sans: var(--font-sans);
+
+  /* Modern Indigo Palette */
+  --color-primary: #4f46e5;
+  /* Indigo 600 */
+  --color-primary-dark: #4338ca;
+  /* Indigo 700 */
+  --color-primary-light: #818cf8;
+  /* Indigo 400 */
+
+  --color-danger: #ef4444;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+
+  /* Glass & Surface */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+
+  /* Animation Config */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50;
+  }
+}
+
+/* Custom Scrollbar for a cleaner look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+}
+
+/*
+  Using CSS variables for the color system to allow easy adjustments.
+  Tailwind v4 theme configuration will pick these up or we can map them.
+  For this setup, we'll stick to a clean custom config.
+*/
+
+:root {
+  /* Brand Colors */
+  --meesho-pink: #f43397;
+  /* Approximate Meesho Pink */
+  --meesho-pink-hover: #d61f7a;
+
+  /* Semantic Colors */
+  --bg-app: #f9fafb;
+  /* gray-50 */
+  --bg-card: #ffffff;
+  --text-main: #0f172a;
+  /* slab-900 */
+  --text-muted: #64748b;
+  /* slate-500 */
+
+  --success: #10b981;
+  --danger: #ef4444;
+}
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-slate-900 antialiased;
+  }
+}
+
+@layer components {
+
+  /* Custom utility classes if strictly needed, but prefer utility-first */
+  .btn-primary {
+    @apply bg-[#f43397] hover:bg-[#d61f7a] text-white font-medium rounded-md px-4 py-2 transition-colors;
+  }
 }
